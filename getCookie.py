@@ -7,7 +7,6 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from webdriver_manager.chrome import ChromeDriverManager
 import random  # 添加random模块导入
 
 
@@ -29,25 +28,25 @@ def get_grok_cookie(count=50):  # 默认设置为50
 
     for i in range(1, count + 1):
         print(f"正在获取第 {i}/{count} 个Cookie...")
-
-        # 设置Chrome选项
-        chrome_options = Options()
-        chrome_options.add_argument("--incognito")  # 无痕模式
-        chrome_options.add_argument("--disable-blink-features=AutomationControlled")  # 禁用标识
-        chrome_options.add_argument("--disable-extensions")
-        chrome_options.add_argument("--disable-gpu")
-        chrome_options.add_argument("--no-sandbox")
-        chrome_options.add_argument("--headless")  # 添加无头模式，适合CI环境
-        chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
-        chrome_options.add_experimental_option("useAutomationExtension", False)
+        driver = None
         
-        # 添加更真实的用户代理
-        chrome_options.add_argument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36")
-
-        # 启动Chrome浏览器
         try:
-            service = Service(ChromeDriverManager().install())
-            driver = webdriver.Chrome(service=service, options=chrome_options)
+            # 设置Chrome选项
+            chrome_options = Options()
+            chrome_options.add_argument("--incognito")  # 无痕模式
+            chrome_options.add_argument("--disable-blink-features=AutomationControlled")  # 禁用标识
+            chrome_options.add_argument("--disable-extensions")
+            chrome_options.add_argument("--disable-gpu")
+            chrome_options.add_argument("--no-sandbox")
+            chrome_options.add_argument("--headless")  # 添加无头模式，适合CI环境
+            chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
+            chrome_options.add_experimental_option("useAutomationExtension", False)
+            
+            # 添加更真实的用户代理
+            chrome_options.add_argument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36")
+
+            # 启动Chrome浏览器 - 直接使用系统Chrome，不使用ChromeDriverManager
+            driver = webdriver.Chrome(options=chrome_options)
 
             # 修改WebDriver属性，避免被检测
             driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
@@ -109,8 +108,9 @@ def get_grok_cookie(count=50):  # 默认设置为50
         finally:
             # 关闭浏览器
             try:
-                driver.quit()
-                print("已关闭浏览器")
+                if driver:
+                    driver.quit()
+                    print("已关闭浏览器")
             except Exception as e:
                 print(f"关闭浏览器时出错: {e}")
 

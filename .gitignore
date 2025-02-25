@@ -55,6 +55,7 @@ geckodriver*
 # 其他
 .coverage
 htmlcov/
-.pytest_cache/ 
+.pytest_cache/
 
 cookies/
+

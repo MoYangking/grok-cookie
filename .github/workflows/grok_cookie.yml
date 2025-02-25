@@ -5,13 +5,17 @@ on:
   schedule:
     - cron: '0 0 * * 0'  # 每周日UTC 00:00自动运行
 
+# 添加显式权限配置
+permissions:
+  contents: write  # 允许工作流程写入仓库内容，包括创建releases
+
 jobs:
   get-cookies:
     runs-on: ubuntu-latest
     
     steps:
       - name: 检出代码
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
       
       - name: 设置Python环境
         uses: actions/setup-python@v5
@@ -29,12 +33,22 @@ jobs:
         run: |
           pip install -r requirements.txt
       
+      - name: 创建cookies目录
+        run: mkdir -p cookies
+      
       - name: 获取Grok Cookies
         run: python getCookie.py
       
       - name: 获取当前日期
         id: date
         run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+      
+      - name: 创建空的all_cookies.json (如果不存在)
+        run: |
+          if [ ! -f cookies/all_cookies.json ]; then
+            echo '{"cookies":[],"last_cookie_index":{"grok-2":0,"grok-3":0,"grok-3-thinking":0},"temporary_mode":true}' > cookies/all_cookies.json
+            echo "创建了空的cookies/all_cookies.json文件"
+          fi
       
       - name: 创建Release
         id: create_release
