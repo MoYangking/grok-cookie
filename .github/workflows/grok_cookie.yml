@@ -1,0 +1,50 @@
+name: 获取Grok Cookies并发布
+
+on:
+  workflow_dispatch:  # 允许手动触发
+  schedule:
+    - cron: '0 0 * * 0'  # 每周日UTC 00:00自动运行
+
+jobs:
+  get-cookies:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+      
+      - name: 设置Python环境
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      
+      - name: 安装Chrome浏览器
+        run: |
+          wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+          echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" | sudo tee /etc/apt/sources.list.d/google-chrome.list
+          sudo apt-get update
+          sudo apt-get install -y google-chrome-stable
+      
+      - name: 安装依赖项
+        run: |
+          pip install -r requirements.txt
+      
+      - name: 获取Grok Cookies
+        run: python getCookie.py
+      
+      - name: 获取当前日期
+        id: date
+        run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+      
+      - name: 创建Release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: Grok Cookies - ${{ steps.date.outputs.date }}
+          tag_name: cookies-${{ steps.date.outputs.date }}
+          files: cookies/all_cookies.json
+          draft: false
+          prerelease: false
+          generate_release_notes: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
