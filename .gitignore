@@ -56,3 +56,5 @@ geckodriver*
 .coverage
 htmlcov/
 .pytest_cache/ 
+
+cookies/
