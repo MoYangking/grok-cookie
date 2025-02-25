@@ -142,7 +142,7 @@ def get_grok_cookie(count=50):  # 默认设置为50
 
 if __name__ == "__main__":
     # 硬编码获取50个Cookie
-    cookies = get_grok_cookie(3)
+    cookies = get_grok_cookie(50)
 
     # 显示结果
     if cookies:
